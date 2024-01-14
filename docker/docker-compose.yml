@@ -1,0 +1,14 @@
+version: "3.9"
+name: hugo-notes
+
+services:
+  proxy:
+    hostname: hugo-notes-proxy
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    container_name: hugo-notes-proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ../public:/usr/share/nginx/html

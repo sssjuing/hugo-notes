@@ -1,5 +1,7 @@
 ---
 title: Hacking
+sidebar:
+  exclude: true
 ---
 
 ## 渗透测试的不同阶段：

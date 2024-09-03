@@ -89,3 +89,35 @@ gateway 192.168.7.1
 ## 查看 IP 是否被封
 
 https://ping.pe/
+
+
+
+## Debian 使用 Wifi 联网
+
+需要安装 NetworkManager，他提供了命令行方式 nmcli 和 图形界面方式 nmtui 进行网络连接和管理，避免用户通过修改相关文件进行 wifi 网络连接，方便使用。
+
+首先输入以下命令安装和启动服务
+
+```shell
+apt install -y netwok-manager
+
+systemctl start NetworkManager.service
+systemctl enable NetworkManager.service
+```
+
+随后将配置文件 `/etc/NetworkManager/NetworkManager.conf` 中的内容替换为以下内容。其中managed=true使全部网卡纳入到 NetworkManager 的管理中，unmanaged-devices 将那些非wifi网络设备排除掉。
+
+```toml
+[main]
+plugins=ifupdown,keyfile
+
+[keyfile]
+unmanaged-devices=*,except:type:wifi,except:type:wwan
+
+[ifupdown]
+managed=true
+```
+
+之后可输入 `nmcli d` 命令查看设备状态。其他命令可参考[文档](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-networkmanager-to-ignore-certain-devices_configuring-and-managing-networking)。
+
+

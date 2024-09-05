@@ -11,8 +11,6 @@ weight: 2
 - [Xray 教程](https://tlanyan.pp.ua/xray-tutorial/)
 - [V2rayN 4.12 配置教程](https://v2xtls.org/v2rayn-4-12%E9%85%8D%E7%BD%AE%E6%95%99%E7%A8%8B/)
 
-<br/>
-
 ## 将语言更改成英语
 
 首先输入下列语句，打开 locale 文件。
@@ -35,8 +33,6 @@ LANG="en_US.UTF-8"
 LANGUAGE="en_US:en"
 ```
 
-<br/>
-
 ## 配置 sudo
 
 ```shell
@@ -51,8 +47,6 @@ vim /etc/sudoers
 chmod 440 /etc/sudoers # 将sudoers改回只读权限
 ```
 
-<br/>
-
 ## 配置静态 IP
 
 打开`/etc/network/interfaces`文件，写入如下信息
@@ -66,13 +60,50 @@ gateway 192.168.7.1
 
 之后输入`reboot`重启。~~之后输入`/etc/init.d/networking restart`重启网络服务。~~
 
-<br/>
-
 ## 修改 GRUB 引导菜单等待时间
 
 编辑`/etc/default/grub`文件，修改**GRUB_TIMEOUT=5** 这一参数值， 且保存退出。之后执行`sudo update-grub`重新生成 GRUB。
 
-<br/>
+## 修改主机名、域名
+
+### 设置主机名
+
+相关命令：使用 `hostname` 查看主机名，使用 `hostname -f` 查看域名
+
+可以直接修改 `/etc/hostname` 文件，或者使用如下命令设置 `hostname` 。
+
+```shell
+hostnamectl set-hostname <your_host_name>
+```
+
+### 设置域名
+
+修改文件 `/etc/hosts`
+
+```
+127.0.0.1     <your_host_name>.debian.local  <your_host_name>
+```
+
+## 允许 ssh 远程登录 root 账号
+
+首先，修改 root 密码（可选）。
+
+```shell
+sudo passwd root
+```
+
+其次，编辑 `/etc/ssh/sshd_config` 文件
+
+```diff
+- #PermitRootLogin prohibit-password
++ PermitRootLogin yes
+```
+
+之后输入 `sudo systemclt retart sshd` 重启 ssh 服务。
+
+## 查看 IP 是否被封
+
+https://ping.pe/
 
 ## Docker 配置国内源
 
@@ -83,14 +114,6 @@ gateway 192.168.7.1
   "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn"]
 }
 ```
-
-<br/>
-
-## 查看 IP 是否被封
-
-https://ping.pe/
-
-
 
 ## Debian 使用 Wifi 联网
 
@@ -105,7 +128,7 @@ systemctl start NetworkManager.service
 systemctl enable NetworkManager.service
 ```
 
-随后将配置文件 `/etc/NetworkManager/NetworkManager.conf` 中的内容替换为以下内容。其中managed=true使全部网卡纳入到 NetworkManager 的管理中，unmanaged-devices 将那些非wifi网络设备排除掉。
+随后将配置文件 `/etc/NetworkManager/NetworkManager.conf` 中的内容替换为以下内容。其中 managed=true 使全部网卡纳入到 NetworkManager 的管理中，unmanaged-devices 将那些非 wifi 网络设备排除掉。
 
 ```toml
 [main]
@@ -119,5 +142,3 @@ managed=true
 ```
 
 之后可输入 `nmcli d` 命令查看设备状态。其他命令可参考[文档](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-networkmanager-to-ignore-certain-devices_configuring-and-managing-networking)。
-
-

@@ -7,21 +7,21 @@ weight: 3
 
 LVM 是 Logical Volume Manager（逻辑卷管理）的简写，它是 Linux 环境下对磁盘分区进行管理的一种机制。LVM 是在磁盘分区和文件系统之间添加的一个逻辑层，来为文件系统屏蔽下层磁盘分区布局，提供一个抽象的盘卷，在盘卷上建立文件系统，来提高磁盘分区管理的灵活性。通过 LVM 系统管理员可以轻松管理磁盘分区，如：将若干个磁盘分区连接为一个整块的卷组（volume group），形成一个存储池。管理员可以在卷组上随意创建逻辑卷组（logical volumes），并进一步在逻辑卷组上创建文件系统。管理员通过 LVM 可以方便的调整存储卷组的大小，并且可以对磁盘存储按照组的方式进行命名、管理和分配，例如按照使用用途进行定义：“DBdata”和“DBSoft”，而不是使用物理磁盘名“sda”和“sdb”或”hda”和”hdb”。而且当系统添加了新的磁盘，通过 LVM 管理员就不必将磁盘的文件移动到新的磁盘上以充分利用新的存储空间，而是直接扩展文件系统跨越磁盘即可。
 
-![](https://upload-images.jianshu.io/upload_images/13786481-4915eb03f4468613.png?imageMogr2/auto-orient/strip|imageView2/2/w/290/format/webp)
+![](13786481-4915eb03f4468613.png)
 
 LVM 将一个或多个磁盘分区（PV）虚拟为一个卷组（VG），相当于一个大的硬盘，我们可以在上面划分一些逻辑卷（LV）。当卷组的空间不够使用时，可以将新的磁盘分区加入进来。我们还可以从卷组剩余空间上划分一些空间给空间不够用的逻辑卷使用。LVM 模型如下：
 
-![](https://ask.qcloudimg.com/http-save/yehe-1005774/fahp1lv120.png?imageView2/2/w/1620)
+![](fahp1lv120.png)
 
 物理卷（PV）被由大小等同的基本单元 PE 组成，一个卷组由一个或多个物理卷组成。逻辑卷建立在卷组上。逻辑卷就相当于非 LVM 系统的磁盘分区，可以在其上创建文件系统。
 
-![](https://upload-images.jianshu.io/upload_images/13786481-17cfcf5e151b95bb.png?imageMogr2/auto-orient/strip|imageView2/2/w/318/format/webp)
+![](13786481-17cfcf5e151b95bb.png)
 
-![](https://upload-images.jianshu.io/upload_images/13786481-aceebb465f88ae6b.png?imageMogr2/auto-orient/strip|imageView2/2/w/329/format/webp)
+![](13786481-aceebb465f88ae6b.png)
 
 下图是磁盘分区、卷组、逻辑卷和文件系统之间的逻辑关系的示意图：
 
-![](https://upload-images.jianshu.io/upload_images/13786481-30d4da28048df704.png?imageMogr2/auto-orient/strip|imageView2/2/w/328/format/webp)
+![](13786481-30d4da28048df704.png)
 
 <br/>
 

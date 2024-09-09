@@ -150,7 +150,7 @@ Syncing disks.
 
 ### 创建物理卷（Physical Volume，PV）
 
-查看是否以分好区
+查看是否已分好区
 
 ```bash
 user@debian:~$ sudo lsblk

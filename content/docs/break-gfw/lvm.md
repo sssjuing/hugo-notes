@@ -251,17 +251,19 @@ user@debian:~$ sudo vgchange -a y debian-vg-2
 
 #### 创建新的逻辑卷（Logical Volume，LV）并挂载
 
-创建逻辑卷
+创建逻辑卷(创建一个 15G 的 LV)
 
 ```bash
 user@debian:~$ sudo lvcreate -L 15G -n data debian-vg-2
   Logical volume "data" created
 ```
 
+也可以输入 `lvcreate -l 100%VG -n data debian-vg-2` 创建一个占用全部卷组的逻辑卷，或者输入 `lvcreate -l 80% -n data debian-vg-2` 创建一个占用 80%剩余空间的逻辑卷。
+
 查看新创建的 LV
 
 ```bash
-user@debian:~$ sudo lvisplay
+user@debian:~$ sudo lvdisplay
   --- Logical volume ---
   LV Path                /dev/debian-vg-2/data
   LV Name                data
@@ -278,6 +280,12 @@ user@debian:~$ sudo lvisplay
   Read ahead sectors     auto
   - currently set to     256
   Block device           254:2
+```
+
+格式化新创建的 LV
+
+```shell
+mkfs -t ext4 /dev/debian-vg-2/data
 ```
 
 将新创建的逻辑卷激活并挂载

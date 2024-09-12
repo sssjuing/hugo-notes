@@ -161,7 +161,11 @@ fn vertex_main(@location(0) pos: vec2f) ->
 
 ### 2.2 fragment 着色器
 
-fragment 着色器的绘制模式有以下 5 种，在创建流水线时用 `primitive.topology` 指定：
+{{<callout type="info">}}
+fragment 着色器对应于计算机图形学中的光栅化(rasterizing)步骤。
+{{</callout>}}
+
+fragment 着色器的绘制模式有以下 5 种，在 `createRenderPipeline` 创建流水线时用 `primitive.topology` 指定：
 
 - `'point-list'`: 对于每个顶点，绘制一个点
 - `'line-list'`: 每 2 个点绘制一条线
@@ -251,9 +255,7 @@ Inter-stage 变量从顶点着色器的输出在传递给片段着色器时会�
 可以将片元着色器的输入参数声明为 VertexOutput，这样就可以捕获顶点着色器传出的数据了。
 
 {{<callout type="warning">}}
-
-注意，默认情况下，这些值将在 3 个点之间进行插值，进行插值的是用@location 标记的值。
-
+注意：默认情况下，这些值将在 3 个点之间进行插值，进行插值的是用 `@location` 标记的值。
 {{</callout>}}
 
 ```wgsl
@@ -294,11 +296,11 @@ const cellPipeline = device.createRenderPipeline({
 });
 ```
 
-> 其中`pipelineLayout`、`cellShaderModule`、`vertexBufferLayout`均为之前创建，canvasFormat 为准备 canvas context 时创建的，此处传入的应和之前传入  `context.configure`  方法中的保持一致，如前所述。
->
-> 当 layout 设置为`‘auto'`时，将会使流水线根据您在着色器代码本身中声明的绑定自动创建 bind group 布局（要求 WebGPU 从着色器中推断出数据布局）。 ‘auto’很方便，但使用 layout: ‘auto’ 布局无法在不同管道中共享绑定组。
+其中`pipelineLayout`、`cellShaderModule`、`vertexBufferLayout`均为之前创建，canvasFormat 为准备 canvas context 时创建的，此处传入的应和之前传入  `context.configure`  方法中的保持一致，如前所述。
 
-vertex 字段需要提供有关 vertex 的详细信息。包括着色器、着色器代码中为每个顶点调用的函数的名称(entryPoint)、描述数据如何打包到用于此流水线的顶点缓冲区中( `GPUVertexBufferLayout`  对象的数组)。
+当 layout 设置为`‘auto'`时，将会使流水线根据您在着色器代码本身中声明的绑定自动创建 bind group 布局（要求 WebGPU 从着色器中推断出数据布局）。 ‘auto’很方便，但使用 layout: ‘auto’ 布局无法在不同管道中共享绑定组。
+
+vertex 字段需要提供有关 vertex 的详细信息。包括着色器、着色器代码中为每个顶点调用的函数的名称(entryPoint)、描述数据如何打包到用于此流水线的顶点缓冲区中（ `GPUVertexBufferLayout`  对象的数组）。buffers 字段可放置多个顶点缓冲区布局，实际的顶点缓冲区在渲染通道中通过 `setVertexBuffer` 传入。
 
 fragment 字段提供有关 fragment 的详细信息。module 和 entryPoint 同上，targets 用于定义此流水线搭配使用的 targets，里面的信息要与使用此流水线的所有渲染通道的 colorAttachments 中提供的纹理一致。
 
@@ -306,7 +308,7 @@ fragment 字段提供有关 fragment 的详细信息。module 和 entryPoint 同
 
 要发送到 GPU 的命令与渲染相关，需要使用 encoder 启动渲染通道。渲染通道是指 WebGPU 中的所有绘图操作发生时需要执行的命令。每个通道都以  `beginRenderPass()`  调用开始，该调用定义接收所执行的任何绘图命令输出的纹理。更高级的用途可以提供多种纹理（称为“Attachment”）来实现各种用途，例如存储所渲染几何图形的深度或提供抗锯齿效果。
 
-{{<callout type="info" >}}
+{{<callout type="info">}}
 
 注意：上面定义的缓冲区、绑定组等内容已经被收集到了 pipeline 中，这里还要传入一次。
 
@@ -328,15 +330,6 @@ const pass = encoder.beginRenderPass({
     },
   ],
 });
-// 使用哪个流水线进行绘制
-// 包括所使用的着色器、顶点数据的布局以及其他相关状态数据
-pass.setPipeline(cellPipeline);
-pass.setVertexBuffer(0, vertexBuffer); // 设置顶点缓冲区
-pass.draw(vertices.length / 2); // 传入顶点数量，或称顶点着色器的调用次数（对于单个实例）
-
-// End the render pass and submit the command buffer
-pass.end();
-device.queue.submit([encoder.finish()]);
 ```
 
 传入  `beginRenderPass()`  的对象的类型为  `GPURenderPassDescriptor`，它描述了我们要绘制的纹理以及如何使用它们。`render pass`  编码器是一种特定的编码器，用于创建与渲染相关的命令。我们将 renderPassDescriptor 传递给它，告诉它我们要渲染到哪个纹理。
@@ -344,6 +337,26 @@ device.queue.submit([encoder.finish()]);
 clearValue 会指示渲染通道在通道开始时执行 clear 操作时应使用哪种颜色。向其中传递的字典包含四个值：r 表示红色，g 表示绿色，b 表示蓝色，a 表示 alpha（透明度）。每个值的范围介于 0 到 1 之间。
 
 纹理作为 colorAttachment 的 view 属性指定。通过调用 context.getCurrentTexture() 从您之前创建的画布上下文中获取纹理，该方法会返回一个像素宽度和高度与画布的 width 和 height 属性以及调用 context.configure() 时指定的 format 相匹配的纹理。渲染通道要求您提供 GPUTextureView（而非 GPUTexture）来告知它要渲染到纹理的哪些部分。这对于更高级的用例才真正重要，因此在这里您要对纹理调用 createView()（不添加任何参数），这表示您希望渲染通道使用整个纹理。
+
+```ts
+// 使用哪个流水线进行绘制
+// 包括所使用的着色器、顶点数据的布局以及其他相关状态数据
+pass.setPipeline(cellPipeline);
+pass.setVertexBuffer(0, vertexBuffer); // 设置顶点缓冲区
+pass.draw(vertices.length / 2);
+```
+
+`setPipeline` 用于设置使用的流水线，WebGPU 支持多个流水线同时绘制，每个流水线分别绘制不同的类型的图元(primitive，点、线、三角形等)、深度缓冲（depthStencil）等。如果要绘制多个流水线可以多次调用。
+
+`setVertexBuffer` 用于设置多个顶点缓冲区，第一个参数对应于传入 `createRenderPipeline` 的 vertex.buffers 属性的 `GPUVertexBufferLayout` 对象数组的索引，第二个参数是该 `GPUVertexBufferLayout` 对象对应的顶点缓冲区。
+
+`draw` 告诉 WebGPU 绘制此流水线，第一个参数是顶点数量，或称顶点着色器的调用次数。此处因为每个点两个坐标，因此除以 2。还有第二个参数，用于指示这个顶点缓冲区要整体绘制多少遍。
+
+```ts
+// End the render pass and submit the command buffer
+pass.end();
+device.queue.submit([encoder.finish()]);
+```
 
 encoder.finish()返回  `GPUCommandBuffer`，它是所记录命令的不透明句柄。之后使用 GPUDevice 的 queue 将命令缓冲区提交到 GPU。队列会执行所有 GPU 命令，确保这些命令的执行顺序合理且适当同步。队列的 submit() 方法接受命令缓冲区数组。命令缓冲区一旦提交，便无法再次使用，因此无需保留。
 

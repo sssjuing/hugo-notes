@@ -45,21 +45,9 @@ const vertexBuffer = device.createBuffer({
 - `u32` (32 位无符号整数，4 字节)
 - `f16` (16 位浮点数，2 字节)
 
-## uniform buffer
+### 1.3 uniform buffer
 
-uniform 实际上是全局变量，因此可用于所有三种着色器（顶点、片段和计算）。从 uniform 到 storage buffer 的转换非常简单，如文章顶部的 storage buffer 所示。vertex buffer 仅用于顶点着色器。它们更为复杂，因为需要向 WebGPU 描述数据布局。texture 最为复杂，因为它们有大量类型和选项。
-
-## storage buffer(存储缓冲区)
-
-## uniform 缓冲区与存储缓冲区的区别
-
----
-
-## 3. 添加额外数据
-
-### 3.1 Uniform 缓冲区
-
-另一种向 GPU 传递数据的方式是使用 uniform 缓冲区。与每次调用顶点着色器会将顶点缓冲区的不同的值传入不同，uniform 在每次调用时传入值都是一样的。一般适合传递几何图形（例如其位置）、整个动画（例如当前时间）甚至应用的整个生命周期（例如用户偏好设置）的常用值。以下代码创建 uniform 缓冲区，与创建顶点缓冲区非常相似（因为 uniform 会通过与顶点相同的 GPUBuffer 对象传递给 WebGPU API），唯一不同是`GPUBufferUsage.UNIFORM`。
+除了顶点缓冲区，另一种向 GPU 传递数据的方式是使用 uniform 缓冲区。与每次调用顶点着色器会将顶点缓冲区的不同的值传入不同，uniform 在每次调用时传入值都是一样的。一般适合传递几何图形（例如其位置）、整个动画（例如当前时间）甚至应用的整个生命周期（例如用户偏好设置）的常用值。以下代码创建 uniform 缓冲区，与创建顶点缓冲区非常相似（因为 uniform 会通过与顶点相同的 GPUBuffer 对象传递给 WebGPU API），唯一不同是`GPUBufferUsage.UNIFORM`。
 
 ```ts
 const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
@@ -71,9 +59,46 @@ const uniformBuffer = device.createBuffer({
 device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
 ```
 
-uniform 缓冲区就像是着色器的全局变量。你可以在执行着色器之前设置它们的值，然后在着色器的每次迭代中都使用这些值。在下次 GPU 执行着色器时，你可以将其设置为其他值。
+uniform 缓冲区就像是着色器的全局变量，因此可用于所有三种着色器（顶点、片段和计算）。你可以在执行着色器之前设置它们的值，然后在着色器的每次迭代中都使用这些值。在下次 GPU 执行着色器时，你可以将其设置为其他值。
 
-### 3.2 绑定组 (bind group)
+### 1.4 storage buffer(存储缓冲区)
+
+storage 缓冲区也类似于一种全局变量，因为 uniform 缓冲区的大小有限，无法支持动态大小的数组（您必须在着色器中指定数组大小），所以在另一些场景下需要用到存储缓冲区。
+
+存储缓冲区是通用缓冲区，可以在计算着色器中读取和写入，并在顶点着色器中读取。它们可能非常大，并且不需要在着色器中声明特定大小，因此它们更类似于常规内存。这就是您用来存储单元格状态的内容。
+
+> GPU 很可能会对 uniform 缓冲区进行特殊处理，以使它们的更新和读取速度比存储缓冲区更快，因此对于可能会频繁更新且数量较少的数据（例如模型、视图和投影矩阵），uniform 通常是一种更安全的选择，可以实现更好的性能。
+
+以下代码创建了一个存储缓冲区：
+
+```ts
+const cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
+// Create a storage buffer to hold the cell state.
+const cellStateStorage = device.createBuffer({
+  label: "Cell State",
+  size: cellStateArray.byteLength,
+  usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+});
+```
+
+### 1.5 uniform 缓冲区与存储缓冲区的区别
+
+1. uniform 缓冲区在典型的使用情况下速度更快
+
+   这确实取决于用例，一个典型的应用程序是需要绘制大量不同的内容。比方说，这是一款 3D 游戏。应用程序可能会绘制汽车、建筑物、岩石、灌木丛、人物等…每一种都需要传递方向和材质属性，与我们上面的示例所传递的类似。在这种情况下，建议使用统一缓冲区。
+
+2. 存储缓冲区的大小可以比 uniform 缓冲区大得多
+
+   - uniform 缓冲区的最小最大值为 64KiB(65536 bytes)
+   - 存储缓冲区的最小最大值为 128MiB(134217728 bytes)
+
+> 所谓的最小最大值，是指某类缓冲区的最大容量。对于 uniform 缓冲区，最大大小至少为 64KiB。对于存储缓冲区，则至少为 128 MiB。
+
+3. 存储缓冲区可读写，uniform 缓冲区只能读
+
+> 从 uniform 到 storage buffer 的转换非常简单，如文章顶部的 storage buffer 所示。vertex buffer 仅用于顶点着色器。它们更为复杂，因为需要向 WebGPU 描述数据布局。texture 最为复杂，因为它们有大量类型和选项。
+
+## 2. 绑定组 (bind group)
 
 不同于顶点缓冲区需要 vertexBufferLayout 与着色器建立关联，uniform 需要使用使用 bind group 建立这种关联。
 
@@ -119,48 +144,18 @@ fn vertex_main(@location(0) pos: vec2f) ->
 
 group(0)与 bind group layout 对应。
 
-### 3.3 将 bind group 绑定到绘制命令
+### 2.1 绑定组布局
 
-```ts
-pass.setPipeline(cellPipeline);
-pass.setVertexBuffer(0, vertexBuffer);
-pass.setBindGroup(0, bindGroup); // New line!
-pass.draw(vertices.length / 2);
-```
+### 2.2 使用绑定组关联缓冲区
 
-作为第一个参数传递的 0 对应于着色器代码中的 `@group(0)`。可视为 `@group(0)` 中的每个 `@binding` 都会使用此 bind group 中的资源。此外，pipelineLayout 中的 bindGroupLayouts 字段的索引也与传入 `@group` 的值对应。
-
-### 3.4 存储缓冲区
-
-因为 uniform 缓冲区的大小有限，无法支持动态大小的数组（您必须在着色器中指定数组大小），并且无法由计算着色器写入，所以在另一些场景下需要用到存储缓冲区。
-
-存储缓冲区是通用缓冲区，可以在计算着色器中读取和写入，并在顶点着色器中读取。它们可能非常大，并且不需要在着色器中声明特定大小，因此它们更类似于常规内存。这就是您用来存储单元格状态的内容。
-
-> GPU 很可能会对 uniform 缓冲区进行特殊处理，以使它们的更新和读取速度比存储缓冲区更快，因此对于可能会频繁更新且数量较少的数据（例如模型、视图和投影矩阵），uniform 通常是一种更安全的选择，可以实现更好的性能。
-
-创建存储缓冲区
-
-```ts
-const cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
-
-// Create a storage buffer to hold the cell state.
-const cellStateStorage = device.createBuffer({
-  label: "Cell State",
-  size: cellStateArray.byteLength,
-  usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-});
-```
-
-着色器中在渲染网格之前查看存储缓冲区的内容
+在 WGSL 中声明 uniform 和 storage 缓冲区如下，可见这两种缓冲区就像是全局变量一样。不过只能读取，不能写入。group 为 0 说明和之前的 uniform 缓冲区共用一个 bind group。
 
 ```wgsl
-@group(0) @binding(0) var<uniform> grid: vec2f;
-@group(0) @binding(1) var<storage> cell_state: array<u32>; // New!
+@group(0) @binding(0) var<uniform> grid: vec2f; // uniform 缓冲区
+@group(0) @binding(1) var<storage> cell_state: array<u32>; // storage缓冲区
 ```
 
-之后就可以向使用 uniform 一样在着色器中使用 cell_state 了，就像一个普通的全局变量一样，不过只能读取，不能写入。group 为 0 说明和之前的 uniform 缓冲区共用一个 bind group。
-
-之后需要向 bindGroup 添加新的 entry，即存储缓冲区的 entry，以便着色器能获取到数据。
+之后需要在 bindGroup 中添加这两个缓冲区的 entry，以便着色器能获取到数据。
 
 ```ts
 const bindGroup = device.createBindGroup({
@@ -171,28 +166,23 @@ const bindGroup = device.createBindGroup({
       binding: 0,
       resource: { buffer: uniformBuffer },
     },
-    // New entry!
     {
       binding: 1,
-      resource: { buffer: cellStateStorage },
+      resource: { buffer: storageBuffer },
     },
   ],
 });
 ```
 
-可以借助于存储缓冲区实现 **乒乓球缓冲区模式**。即创建两个存储缓冲区，一个用于显示的同时在另一个上修改数据。之后切换缓冲区，将上一步修改好的数据用于显示，释放出显示完的数据进行下一步的修改。注意切换操作应放入无限循环中以达到动画效果，建议放在`requestAnimationFrame()`  函数中以与屏幕刷新相同的频率（每秒 60 次）安排回调。
+可以借助于存储缓冲区实现  **乒乓球缓冲区模式**。即创建两个存储缓冲区，一个用于显示的同时在另一个上修改数据。之后切换缓冲区，将上一步修改好的数据用于显示，释放出显示完的数据进行下一步的修改。注意切换操作应放入无限循环中以达到动画效果，建议放在`requestAnimationFrame()`  函数中以与屏幕刷新相同的频率（每秒 60 次）安排回调。
 
-#### 3.4.1 uniform 缓冲区与存储缓冲区的区别
+### 2.3 将 bind group 绑定到绘制命令
 
-- uniform 缓冲区在典型的使用情况下速度更快
+```ts
+pass.setPipeline(cellPipeline);
+pass.setVertexBuffer(0, vertexBuffer);
+pass.setBindGroup(0, bindGroup); // New line!
+pass.draw(vertices.length / 2);
+```
 
-  这确实取决于用例，一个典型的应用程序是需要绘制大量不同的内容。比方说，这是一款 3D 游戏。应用程序可能会绘制汽车、建筑物、岩石、灌木丛、人物等…每一种都需要传递方向和材质属性，与我们上面的示例所传递的类似。在这种情况下，建议使用统一缓冲区。
-
-- 存储缓冲区的大小可以比 uniform 缓冲区大得多
-
-  - uniform 缓冲区的最小最大值为 64KiB(65536 bytes)
-  - 存储缓冲区的最小最大值为 128MiB(134217728 bytes)
-
-  所谓的最小最大值，是指某类缓冲区的最大容量。对于 uniform 缓冲区，最大大小至少为 64KiB。对于存储缓冲区，则至少为 128 MiB。
-
-- 存储缓冲区可读写，uniform 缓冲区只能读
+作为第一个参数传递的 0 对应于着色器代码中的 `@group(0)`。可视为 `@group(0)` 中的每个 `@binding` 都会使用此 bind group 中的资源。此外，pipelineLayout 中的 bindGroupLayouts 字段的索引也与传入 `@group` 的值对应。

@@ -1,10 +1,14 @@
 ---
 title: PVE 常用脚本
 date: "2024-09-06"
-weight: 4
+weight: 2
 ---
 
-```shell
+---
+
+### 查看电池电量
+
+```bash
 #!/bin/bash
 # capacity.sh
 
@@ -16,7 +20,9 @@ echo "Battery capacity is ${file_content}%."
 
 ```
 
-```shell
+### 克隆虚拟机
+
+```bash
 #!/bin/bash
 # clone_vms.sh
 
@@ -26,7 +32,9 @@ do
 done
 ```
 
-```shell
+### 批量回滚虚拟机
+
+```bash
 #!/bin/bash
 # restore_cluster.sh
 
@@ -36,7 +44,9 @@ do
 done
 ```
 
-```shell
+### 启动虚拟机集群
+
+```bash
 #!/bin/bash
 # start_cluster.sh
 
@@ -47,7 +57,9 @@ do
 done
 ```
 
-```shell
+### 关闭虚拟机集群
+
+```bash
 #!/bin/bash
 # stop_cluster.sh
 
@@ -56,4 +68,12 @@ do
   qm start $i
   echo "VM $i stopped."
 done
+```
+
+### 修改虚拟机集群的网关
+
+```bash
+#!/bin/bash
+# batch_change_gateway.sh
+echo ''
 ```

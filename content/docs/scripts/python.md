@@ -1,10 +1,11 @@
 ---
-title: Python脚本
+title: Python 脚本
+weight: 1
 ---
 
 ---
 
-## mongo 数据迁移
+### mongo 数据迁移
 
 ```python
 from pymongo import MongoClient
@@ -28,7 +29,7 @@ for db_name in database_list:
         dest_client[db_name][collection_name].insert_many(records)
 ```
 
-## 扫描文件夹内的全部文件
+### 扫描文件夹内的全部文件
 
 ```python
 import os
@@ -88,7 +89,7 @@ def scan_files(dir_path, suffix = None):
     return file_list
 ```
 
-## 格式化打印字典数据
+### 格式化打印字典数据
 
 ```python
 import json
@@ -98,7 +99,7 @@ def print_dict_data(data: dict):
           separators=(', ', ': '), ensure_ascii=False))
 ```
 
-## 转换 pdf 文件为 csv
+### 转换 pdf 文件为 csv
 
 ```python
 # http://zjw.beijing.gov.cn/bjjs/fwgl/index.shtml

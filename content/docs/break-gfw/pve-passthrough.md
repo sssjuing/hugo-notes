@@ -4,7 +4,7 @@ date: "2024-09-16"
 weight: 4
 ---
 
-## 开启IOMMU功能
+## 开启 IOMMU 功能
 
 首先编辑 `/etc/default/grub` 文件，修改变量 `GRUB_CMDLINE_LINUX_DEFAULT` 为 `quiet intel_iommu=on iommu=pt`，随后输入以下命令更新 `grub`。
 
@@ -64,21 +64,61 @@ pvesh get /nodes/{nodename}/hardware/pci --pci-class-blacklist ""
 
 ## 在宿主机上禁用 GPU 设备
 
-编辑 `/etc/modprobe.d/pve-blacklist.conf` 将 NVIDIA 设备加入宿主机黑名单，然后重启宿主机。
+首先，需要执行以下语句将显卡的设备 ID 添加到 vfio-pci 的 options 中，同时禁用 Linux 内核的 VGA 仲裁器(vga arbitration)。设备的 ID 号可以使用 `lspci -nn` 命令获取。
+
+```shell
+echo "options vfio-pci ids=10de:1cbc,10de:0fb9 disable_vga=1" > /etc/modprobe.d/vfio.conf
+```
+
+{{<callout type="info">}}
+注意这里需要将 `Nvidia` 的显卡和 `HDMI` 声卡同时在宿主机上禁用，否则直通显卡后无法启动虚拟机。
+{{</callout>}}
+
+随后，执行以下命令将显卡设备的驱动名称添加到宿主机驱动黑名单(/etc/modprobe.d/pve-blacklist.conf)中，避免宿主机自动根据探测到的硬件设备加载这些驱动。驱动的名称可以通过 `lspci -k` 命令获取，或者执行 `lspci -k | grep -A 3 "VGA"` 命令过滤出显卡相关的信息。
 
 ```shell
 echo "blacklist nouveau" >> /etc/modprobe.d/pve-blacklist.conf
 echo "blacklist nvidia*" >> /etc/modprobe.d/pve-blacklist.conf
+echo "blacklist snd_hda_intel" >> /etc/modprobe.d/pve-blacklist.conf # Nvidia P600 的 HDMI 声卡驱动
 ```
 
+部分情况下，您可能还需要执行以下语句，以便在加载 vfio-pci 之前设置一个 soft dependency 来加载 GPU模块。
 
+```shell
+echo "softdep nvidiafb pre: vfio-pci" > /etc/modprobe.d/nvidiafb.conf
+```
 
-参考文章
+之后，执行如下命令更新模块，并重启 PVE。
+
+```shell
+update-initramfs -u -k all
+reboot
+```
+
+最后，可以通过执行 `lspci -nnk` 命令验证上述设置是否生效，检查输出中所有和目标显卡相关的项目里有如下语句，或者不存在此语句。
+
+```
+Kernel driver in use: vfio-pci
+```
+
+## 创建虚拟机并直通设备
+
+注意机型选择 q35，以便能使用 PCI-E 直通。直通时勾选 "所有功能"，"ROM-Bar"，"PCI-Express"。
+
+TODO:
+
+安装驱动
+
+安装 CUDA
+
+## 参考文章
 
 - [PCI Passthrough - Proxmox VE](https://pve.proxmox.com/wiki/PCI_Passthrough)
 
 - [Proxmox VE Administration Guide](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#qm_pci_passthrough)
 
-- [PVE直通显卡 & Intel SRIOV - MAENE - 博客园](https://www.cnblogs.com/MAENESA/p/18005241)
+- [PVE 直通显卡 & Intel SRIOV - MAENE - 博客园](https://www.cnblogs.com/MAENESA/p/18005241)
 
 - [PCI(e) Passthrough](https://pve.proxmox.com/wiki/PCI(e)_Passthrough)
+
+- [Proxmox VE(PVE)直通显卡 踩坑经验 - 企鹅大大的博客](https://qiedd.com/669.html)

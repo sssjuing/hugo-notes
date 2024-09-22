@@ -1,7 +1,8 @@
 ---
 title: PVE 显卡直通
 date: "2024-09-16"
-weight: 4
+---
+
 ---
 
 ## 开启 IOMMU 功能
@@ -70,8 +71,8 @@ pvesh get /nodes/{nodename}/hardware/pci --pci-class-blacklist ""
 echo "options vfio-pci ids=10de:1cbc,10de:0fb9 disable_vga=1" > /etc/modprobe.d/vfio.conf
 ```
 
-{{<callout type="info">}}
-注意这里需要将 `Nvidia` 的显卡和 `HDMI` 声卡同时在宿主机上禁用，否则直通显卡后无法启动虚拟机。
+{{<callout type="warning">}}
+注意：这里需要将 Nvidia 的显卡和 HDMI 声卡同时在宿主机上禁用，否则直通显卡后无法启动虚拟机。
 {{</callout>}}
 
 随后，执行以下命令将显卡设备的驱动名称添加到宿主机驱动黑名单(/etc/modprobe.d/pve-blacklist.conf)中，避免宿主机自动根据探测到的硬件设备加载这些驱动。驱动的名称可以通过 `lspci -k` 命令获取，或者执行 `lspci -k | grep -A 3 "VGA"` 命令过滤出显卡相关的信息。
@@ -82,7 +83,7 @@ echo "blacklist nvidia*" >> /etc/modprobe.d/pve-blacklist.conf
 echo "blacklist snd_hda_intel" >> /etc/modprobe.d/pve-blacklist.conf # Nvidia P600 的 HDMI 声卡驱动
 ```
 
-部分情况下，您可能还需要执行以下语句，以便在加载 vfio-pci 之前设置一个 soft dependency 来加载 GPU模块。
+部分情况下，您可能还需要执行以下语句，以便在加载 vfio-pci 之前设置一个 soft dependency 来加载 GPU 模块。
 
 ```shell
 echo "softdep nvidiafb pre: vfio-pci" > /etc/modprobe.d/nvidiafb.conf
@@ -103,13 +104,13 @@ Kernel driver in use: vfio-pci
 
 ## 创建虚拟机并直通设备
 
-注意机型选择 q35，以便能使用 PCI-E 直通。直通时勾选 "所有功能"，"ROM-Bar"，"PCI-Express"。
+注意显卡选择 **标准 VGA**，机型选择 **q35**，以便能使用 PCI-E 直通。直通时勾选 "所有功能"，"ROM-Bar"，"PCI-Express"。BIOS 选择 OVMF(UEFI)。
 
-TODO:
+完成 debian 安装后，启动虚拟机时按 Esc 键进入虚拟机的 BIOS，关闭安全模式，reset 重启。
 
-安装驱动
+进入虚拟机后，先修改 `/etc/apt/sources.list` 文件，确保每一行的后面有 `contrib non-free non-free-firmware`，随后输入命令 `sudo apt update` 更新源，并输入 `sudo apt install nvidia-detect` 安装 Nvidia Detect Utility，以便用其检查 GPU 型号并获取合适的驱动安装建议。
 
-安装 CUDA
+之后根据 nvidia-detect 给出的建议，输入 `sudo apt install nvidia-driver` 安装驱动。
 
 ## 参考文章
 
@@ -119,6 +120,10 @@ TODO:
 
 - [PVE 直通显卡 & Intel SRIOV - MAENE - 博客园](https://www.cnblogs.com/MAENESA/p/18005241)
 
-- [PCI(e) Passthrough](https://pve.proxmox.com/wiki/PCI(e)_Passthrough)
+- [PCI(e) Passthrough](<https://pve.proxmox.com/wiki/PCI(e)_Passthrough>)
 
-- [Proxmox VE(PVE)直通显卡 踩坑经验 - 企鹅大大的博客](https://qiedd.com/669.html)
+- [Proxmox VE(PVE)直通显卡 踩坑经验](https://qiedd.com/669.html)
+
+- [NvidiaGraphicsDrivers](https://wiki.debian.org/NvidiaGraphicsDrivers)
+
+- [NVIDIA Drivers for Debian 12 - Step by Step](https://www.reddit.com/r/linux4noobs/comments/18n34c3/nvidia_drivers_for_debian_12_step_by_step/)

@@ -2,6 +2,8 @@
 title: WebGPU
 ---
 
+---
+
 ## 渲染流程
 
 ![使用顶点着色器和片段着色器绘制三角形的 WebGPU 设置简图](https://webgpufundamentals.org/webgpu/lessons/resources/webgpu-draw-diagram.svg)

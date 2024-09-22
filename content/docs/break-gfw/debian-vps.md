@@ -4,6 +4,8 @@ date: "2021-10-30"
 weight: 2
 ---
 
+---
+
 ## XRay
 
 - [官方脚本安装的文件](https://github.com/XTLS/Xray-install)

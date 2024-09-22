@@ -1,8 +1,6 @@
 ---
 title: 注入攻击
 date: "2022-08-31"
-sidebar:
-  exclude: true
 ---
 
 ## 识别漏洞

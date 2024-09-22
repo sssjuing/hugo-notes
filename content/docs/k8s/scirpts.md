@@ -1,7 +1,6 @@
 ---
 title: Kubernetes 脚本
 date: "2024-09-12"
-weight: 3
 ---
 
 ---

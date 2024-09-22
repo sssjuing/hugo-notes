@@ -3,6 +3,8 @@ title: 绘制过程
 weight: 2
 ---
 
+---
+
 ![](https://webgpufundamentals.org/webgpu/lessons/resources/webgpu-simple-triangle-diagram.svg)
 
 你向你的 GPU 上传一个数据缓冲区，并告诉它如何将这些数据解释为一系列的三角形。每个顶点都占据了数据缓冲区的一个块，描述该顶点在三维空间中的位置，但也可能包括颜色、纹理 ID、法线和其他数据。列表中的每个顶点都由 GPU 在顶点阶段处理，在每个顶点运行顶点着色器，它将实现平移、旋转或透视变形等操作。（着色器泛指任何在 GPU 上运行的程序。）

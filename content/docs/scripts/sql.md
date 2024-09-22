@@ -1,6 +1,8 @@
 ---
-title: SQL教程
+title: SQL 脚本
 date: "2022-08-31"
+---
+
 ---
 
 ## 聚合函数（Aggregate Functions）

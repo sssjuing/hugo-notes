@@ -3,7 +3,7 @@ title: 在 GPU 上计算
 weight: 4
 ---
 
-- MAP_READ 缓冲区从 GPU 读取数据到 js
+---
 
 ![](https://webgpufundamentals.org/webgpu/lessons/resources/webgpu-simple-compute-diagram.svg)
 
@@ -232,11 +232,11 @@ const stagingBuffer = device.createBuffer({
 });
 const bindGroup = device.createBindGroup({
   layout: bindGroupLayout,
-  entries: [{ binding: 1,resource: { buffer: output } }],
+  entries: [{ binding: 1, resource: { buffer: output } }],
 });
 ```
 
-使用可写缓存 STORAGE | COPY_SRC 存储数据，用 `CommandEncoder` 的 `copyBufferToBuffer` 方法将内容复制到 MAP_READ | COPY_DST，然后使用宿主代码读取内容）。
+使用可写缓存 STORAGE | COPY_SRC 存储数据，用  `CommandEncoder`  的  `copyBufferToBuffer`  方法将内容复制到 MAP_READ | COPY_DST，然后使用宿主代码读取内容）。
 
 ```ts
 await stagingBuffer.mapAsync(

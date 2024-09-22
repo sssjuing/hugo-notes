@@ -1,7 +1,7 @@
 ---
 title: Debian VPS 配置
 date: "2021-10-30"
-weight: 2
+weight: 3
 ---
 
 ---

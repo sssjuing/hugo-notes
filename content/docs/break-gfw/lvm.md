@@ -1,6 +1,6 @@
 ---
 title: Linux Logical Volume Manager(LVM)详解
-weight: 3
+weight: 4
 ---
 
 ---

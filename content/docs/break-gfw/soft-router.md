@@ -176,7 +176,7 @@ LEDE 的构建参考 [这里](/docs/break-gfw/lede)。
 
 - 之后创建虚拟机，选择**创建新虚拟机**，系统选择其他 Linux64 位，硬件中删除 USB、硬盘，建议内存 2GB。
 - 创建成功后将之前生成的`openwrt.esxi7.vmdk`文件==复制到==刚才创建的虚拟机文件夹中，编辑虚拟机，添加硬盘选择刚才的 vmdk 文件，启动虚拟机。之后马上断电，再次编辑虚拟机，将之前的硬盘容量设置为 1GB，启动虚拟机，安装 lede。
-- 安装完成后应该修改静态 IP 地址，输入`vim /etc/config/network`，找到 option ipaddr '192.168.1.1'，修改为你要设定的 IP，保存退出，输入 reboot 重启 OpenWrt。
+- 安装完成后应该修改静态 IP 地址，输入`vim /etc/config/network`，找到 option ipaddr '192.168.1.1'，修改为你要设定的 IP，保存退出，输入 `/etc/init.d/network reload` 重新加载网络。
 
 ### 路由配置
 

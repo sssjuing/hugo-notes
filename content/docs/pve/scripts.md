@@ -74,5 +74,10 @@ done
 ```bash
 #!/bin/bash
 # batch_change_gateway.sh
-echo ''
+
+for i in {221..225}
+do
+  ssh 192.168.7.$i 'sed -i "14c\gateway 192.168.7.1" /etc/network/interfaces'
+  echo "VM 192.168.7.$i has been set."
+done
 ```

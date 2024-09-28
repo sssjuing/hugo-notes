@@ -16,6 +16,8 @@ weight: 3
 helm repo add topolvm https://topolvm.github.io/topolvm
 helm repo update
 
+kubectl create ns topolvm-system
+
 kubectl label namespace topolvm-system topolvm.io/webhook=ignore
 kubectl label namespace kube-system topolvm.io/webhook=ignoree
 ```
@@ -31,7 +33,7 @@ lvmd:
     - name: ssd
       volume-group: topolvm-vg # 硬盘中准备部署 topolvm 的 volume group 名称, 要求每个节点都有这个卷组
       default: true
-      spare-gb: 10
+      spare-gb: 20
 ```
 
 然后在命令行输入以下语句安装 `topolvm` ：

@@ -101,7 +101,7 @@ sudo passwd root
 + PermitRootLogin yes
 ```
 
-之后输入 `sudo systemclt retart sshd` 重启 ssh 服务。
+之后输入 `sudo systemclt restart sshd` 重启 ssh 服务。
 
 ## 查看 IP 是否被封
 

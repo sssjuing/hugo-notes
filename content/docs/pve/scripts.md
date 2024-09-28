@@ -64,7 +64,7 @@ done
 
 for i in {211..215}
 do
-  qm start $i
+  qm stop $i
   echo "VM $i stopped."
 done
 ```

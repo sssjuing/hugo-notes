@@ -36,7 +36,7 @@ lvmd:
       spare-gb: 20
 ```
 
-然后在命令行输入以下语句安装 `topolvm` ：
+然后在命令行输入以下语句安装 TopoLVM ：
 
 ```shell
 CERT_MANAGER_VERSION=v1.15.1

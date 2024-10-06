@@ -47,7 +47,7 @@ helm install -f my-topolvm-values.yaml --namespace=topolvm-system topolvm topolv
 
 ### 基于 TopoLVM 创建 PVC
 
-安装 `TopoLVM` 后会自动安装相对应的 SC，名为 `topolvm-provisioner` （其模式为 `Delete`， 在移除 PVC 时 SC 不会保留其对应的 PV），因此可直接使用此 SC 创建 PVC。
+安装 TopoLVM 后会自动安装相对应的 SC，名为 `topolvm-provisioner` （其模式为 Delete， 在移除 PVC 时 SC 不会保留其对应的 PV），因此可直接使用此 SC 创建 PVC。
 
 ```yaml
 kind: PersistentVolumeClaim

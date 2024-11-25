@@ -16,7 +16,6 @@ file_path="/sys/class/power_supply/BAT1/capacity"
 file_content=$(cat "$file_path")
 
 echo "Battery capacity is ${file_content}%."
-
 ```
 
 ### 克隆虚拟机
@@ -79,5 +78,61 @@ for i in {221..225}
 do
   ssh 192.168.7.$i 'sed -i "14c\gateway 192.168.7.1" /etc/network/interfaces'
   echo "VM 192.168.7.$i has been set."
+done
+```
+
+### 保存快照
+
+```bash
+#!/bin/bash
+# snapshot.sh
+
+if [ $# -eq 0 ]; then
+  echo "错误：没有输入 snapshot 名称"
+  exit 1
+fi
+
+for i in {211..215}
+do
+  echo "保存vm$i 快照 $1"
+  qm snapshot $i $1
+done
+```
+
+
+
+### 将集群回滚到某个快照
+
+```bash
+#!/bin/bash
+# rollback.sh
+
+if [ $# -eq 0 ]; then
+  echo "错误：没有输入 snapshot 名称"
+  exit 1
+fi
+
+for i in {211..215}
+do
+  echo "回滚 vm$i 到快照 $1"
+  qm rollback $i $1
+done
+```
+
+### 删除集群的快照
+
+```bash
+#!/bin/bash
+# delsnapshot.sh
+
+if [ $# -eq 0 ]; then
+  echo "错误：没有输入 snapshot 名称"
+  exit 1
+fi
+
+for i in {211..215}
+do
+  echo "删除vm$i 快照 $1"
+  qm delsnapshot $i $1
 done
 ```

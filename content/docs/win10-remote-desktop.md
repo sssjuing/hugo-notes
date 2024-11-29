@@ -6,7 +6,7 @@ title: Win10 远程桌面连接
 
 ## Windows10 支持远程桌面连接
 
-1. 首先在这里下载最新版的 RDP Wrapper Library，解压到程序目录下。
+1. 首先在[这里](https://github.com/stascorp/rdpwrap/releases)下载最新版的 RDP Wrapper Library，解压到程序目录下。
 
 ![](https://pic2.zhimg.com/80/v2-3c478f9315809399348186683cfc4c29_720w.webp)
 

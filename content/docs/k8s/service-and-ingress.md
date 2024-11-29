@@ -37,7 +37,7 @@ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/confi
 
 ```bash
 helm repo add metallb https://metallb.github.io/metallb
-helm install metallb metallb/metallb
+helm install metallb metallb/metallb --namespace metallb-system --create-namespace
 ```
 
 此命令将会在 metallb-system 命名空间下安装负载均衡器使用的 controller 和 speaker。
@@ -63,6 +63,8 @@ spec:
   ipAddressPools:
     - first-pool
 ```
+
+完成后可输入 `kubectl get ipaddresspool -n metallb-system` 验证 matellb 设置是否生效。
 
 ## Nginx-Ingress 安装
 

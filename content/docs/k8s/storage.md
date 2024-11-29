@@ -61,3 +61,85 @@ spec:
       storage: 1Gi
   storageClassName: topolvm-provisioner
 ```
+
+## Kubernetes 安装基于 NFS 的 Storage Class
+
+首先，需要准备一台 NFS Server
+
+https://cn.linux-console.net/?p=30931
+
+之后，需要在所有 worker 节点上安装 nfs-common, 否则 kubelet 报错：
+
+```
+MountVolume.SetUp failed for volume "nfs-subdir-external-provisioner-root" : mount failed: exit status 32
+......
+nfs-subdir-external-provisioner-root: bad option; for several filesystems (e.g. nfs, cifs) you might need a /sbin/mount.<type> helper program.
+```
+
+随后，输入一下命令安装 nfs-subdir-external-provisioner：
+
+```bash
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    --set storageClass.name=nfs-sc-default \
+    --set nfs.server=10.9.2.209 \
+    --set nfs.path=/mnt/nfs/shared \
+    --set storageClass.defaultClass=true \
+    --namespace nfs-system --create-namespace
+```
+
+其中：
+
+- storageClass.name ：创建的 Storage Class 的名称
+- nfs.server ：安装了 nfs server 的服务器 IP
+- nfs.path ：在 nfs server 中 /etc/exports 文件内设置的目录
+- torageClass.defaultClass ：用于设置此 Storage Class 为默认 Storage Class
+
+完成安装后将如下 `test-pvc-sc.yaml` 文件传入 kubectl 测试是否安装成功，如成功则可以在 nfs server 对应的目录中找到名为 SUCCESS 的文件。
+
+{{<callout type="info">}}
+注意，你需要将 storageClassName 设置为上一步中创建的 Storage Class，可通过 `kubectl get sc` 查看。
+{{</callout>}}
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: nfs-sc-default
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  containers:
+    - name: test-pod
+      image: busybox:latest
+      command:
+        - "/bin/sh"
+      args:
+        - "-c"
+        - "touch /mnt/SUCCESS && sleep 3600"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 250m
+          memory: 256Mi
+      volumeMounts:
+        - name: nfs-pvc
+          mountPath: "/mnt"
+  restartPolicy: "Never"
+  volumes:
+    - name: nfs-pvc
+      persistentVolumeClaim:
+        claimName: my-pvc
+```

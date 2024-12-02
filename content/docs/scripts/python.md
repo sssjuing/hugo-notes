@@ -5,6 +5,26 @@ weight: 1
 
 ---
 
+### 离线安装 Python 第三方包
+
+```bash
+# (可选)，将 pip 升级到最新版
+python -m pip install -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple --upgrade pip
+
+# (可选)，设置 pip 的默认源
+pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+
+# 将已安装的第三方包信息存储到 requirements.txt 文件
+pip freeze > requirements.txt
+
+# 将第三方包下载到当前目录下的 pkgs 目录中
+pip download -d ./pkgs -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+
+# 复制 pkgs 目录到离线的目标主机中, 执行以下命令离线安装第三方包
+pip install --no-index --ignore-installed --find-links=./pkgs -r requirements.txt
+
+```
+
 ### mongo 数据迁移
 
 ```python
@@ -131,4 +151,46 @@ def main():
 
 if __name__ == "__main__":
   main()
+```
+
+### 将 python 程序部署为 Windows 服务
+
+```python
+import win32serviceutil
+import win32service
+import win32event
+import servicemanager
+import socket
+import time
+
+class PythonService(win32serviceutil.ServiceFramework):
+    _svc_name_ = 'PythonService'  # 服务名称
+    _svc_display_name_ = 'Python Service'  # 服务显示名称
+    _svc_description_ = 'This is a Python service.'  # 服务描述
+
+    def __init__(self, args):
+        win32serviceutil.ServiceFramework.__init__(self, args)
+        self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+        socket.setdefaulttimeout(60)
+
+    def SvcStop(self):
+        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+        win32event.SetEvent(self.hWaitStop)
+
+    def SvcDoRun(self):
+        servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
+                              servicemanager.PYS_SERVICE_STARTED,
+                              (self._svc_name_, ''))
+        self.main()
+
+    def main(self):
+        # 这里添加您的服务逻辑
+        while True:
+            time.sleep(1)
+            # 检查是否需要停止服务
+            if win32event.WaitForSingleObject(self.hWaitStop, 0) == win32event.WAIT_OBJECT_0:
+                break
+
+if __name__ == '__main__':
+    win32serviceutil.HandleCommandLine(PythonService)
 ```

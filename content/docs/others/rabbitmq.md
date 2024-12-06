@@ -1,11 +1,99 @@
 ---
-title: Rabbit MQ
+title: RabbitMQ
 date: "2024-12-03"
 ---
 
 ---
 
-TODO: 将所有参数和方法名替换为 python 的。
+## 命令行创建 RabbitMQ Docker 容器
+
+```bash
+docker run -d --hostname my-rabbit --name some-rabbit -p 5672:5672 -p 15672:15672 -e RABBITMQ_DEFAULT_USER=rabbitmquser --restart unless-stopped -e RABBITMQ_DEFAULT_PASS=rabbitmqpasswd -v rabbitmq_volume:/var/lib/rabbitmq rabbitmq:3-management
+```
+
+## 包含死信队列的示例代码
+
+```go
+    conn, err := amqp.Dial(url)
+    if err != nil {
+        return nil, err
+    }
+    channel, err := conn.Channel()
+    if err != nil {
+        return nil, err
+    }
+
+    // 声明和绑定死信交换机和死信队列
+    if err := channel.ExchangeDeclare(
+        deadExchangeName, // 交换器名称
+        "direct",         // 交换器类型
+        true,             // 持久化
+        false,            // 自动删除
+        false,            // 排他
+        false,            // 无等待
+        nil,              // 额外参数
+    ); err != nil {
+        return err
+    }
+    if _, err := channel.QueueDeclare(
+        deadQueueName, // 队列名称
+        true,          // 持久化
+        false,         // 自动删除
+        false,         // 排他
+        false,         // 无等待
+        nil,           // 额外参数
+    ); err != nil {
+        return err
+    }
+    if err := channel.QueueBind(
+        deadQueueName,    // 死信队列名称
+        deadRoutingKey,   // 死信路由键
+        deadExchangeName, // 死信交换机名称
+        false,            // 无等待
+        nil,              // 额外参数
+    ); err != nil {
+        return err
+    }
+
+    // 声明和绑定任务交换机和任务队列
+    if err := channel.ExchangeDeclare(
+        normalExchangeName, // 交换器名称
+        "direct",           // 交换器类型
+        true,               // 持久化
+        false,              // 自动删除
+        false,              // 排他
+        false,              // 无等待
+        nil,                // 额外参数
+    ); err != nil {
+        return err
+    }
+    if _, err := channel.QueueDeclare(
+        taskQueueName, // 队列名称
+        true,          // 持久化
+        false,         // 自动删除
+        false,         // 排他
+        false,         // 无等待
+        amqp.Table{ // 额外参数
+            "x-dead-letter-exchange":    deadExchangeName, // 指定死信交换机
+            "x-dead-letter-routing-key": deadRoutingKey,   // 指定死信路由键
+            "x-message-ttl":             3_600_000,        // 消息过期时间, 毫秒
+        },
+    ); err != nil {
+        return err
+    }
+    if err := channel.QueueBind(
+        taskQueueName,      // 队列名称
+        taskRoutingKey,     // 绑定键
+        normalExchangeName, // 源交换器名称
+        false,              // noWait
+        nil,
+    ); err != nil {
+        return err
+    }
+    return nil
+```
+
+注意 channel.QueueBind 的绑定键和 channel.Publish 的路由键。RabbitMQ 的 channel.Publish 方法只负责把消息发送到指定的交换器，交换器需要根据其保存的 **绑定键-队列** 映射，将消息中的路由键和绑定建进行匹配，并将匹配成功的消息发送给对应的队列。
 
 ## 交换器类型
 
@@ -141,10 +229,6 @@ DLX，全称为 Dead-Letter-Exchange，可以称之为死信交换器。当消�
 DLX 也是一个正常的交换器，和一般的交换器没有区别，它能在任何的队列上被指定（实际上就是设置某个队列的属性）。当这个队列中存在死信时，RabbitMQ 就会自动地将这个消息重新发布到设置的 DLX 上去，进而被路由到死信队列。可以监听这个队列中的消息以进行相应的处理，这个特性与将消息的 TTL 设置为 0 配合使用时，可以弥补 immeaiate 参数的功能。
 
 通过在 channel.queue_declare 方法中设置 x-dead-letter-exchange 参数来为这个队列添加 DLX，也可以为这个 DLX 指定路由键，如果没有特殊指定，则使用原队列的路由键：
-
-```python
-# TODO:
-```
 
 对于 RabbitMQ 来说，DLX 是一个非常有用的特性。它可以处理异常情况下，消息不能够被消费者正确消费（消费者调用了 Nack 或者 Reject）而被置入死信队列中的情况，后续分析程序可以通过消费这个死信队列中的内容来分析当时所遇到的异常情况，进而可以改善和优化系统。
 

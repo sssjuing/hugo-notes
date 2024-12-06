@@ -1,11 +1,62 @@
 ---
-title: Rabbit MQ
+title: RabbitMQ
 date: "2024-12-03"
 ---
 
 ---
 
-TODO: 将所有参数和方法名替换为 python 的。
+## 示例代码
+
+```go
+	conn, err := amqp.Dial(url)
+	if err != nil {
+		return nil, err
+	}
+	channel, err := conn.Channel()
+	if err != nil {
+		return nil, err
+	}
+	if err := channel.ExchangeDeclare(
+		"ocr.exchange.normal", // 交换器名称
+		"direct",              // 交换器类型
+		true,                  // 持久化
+		false,                 // 自动删除
+		false,                 // 内部
+		false,                 // 无等待
+		nil,                   // 额外参数
+	); err != nil {
+		return nil, err
+	}
+	queue, err := channel.QueueDeclare(
+		"ocr.queue.task", // 队列名称
+		true,             // 持久化
+		false,            // 自动删除
+		false,            // 排他
+		false,            // 无等待
+		nil,              // 额外参数
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err := channel.QueueBind(
+		"ocr.queue.task",      // 队列名称
+		"ocr.rk.task",         // 绑定键
+		"ocr.exchange.normal", // 源交换器名称
+		false,                 // noWait
+		nil,                   // arguments
+	); err != nil {
+		return nil, err
+	}
+  channel.Publish(
+		"ocr.exchange.normal", // 交换器名称
+		"ocr.rk.task",         // 路由键
+		false,
+		false,
+		amqp.Publishing{ContentType: "application/json", Body: body},
+	)
+```
+
+注意 channel.QueueBind 的绑定键和 channel.Publish 的路由键。RabbitMQ 的 channel.Publish 方法只负责把消息发送到指定的交换器，交换器需要根据其保存的 **绑定键-队列** 映射，将消息中的路由键和绑定建进行匹配，并将匹配成功的消息发送给对应的队列。
 
 ## 交换器类型
 

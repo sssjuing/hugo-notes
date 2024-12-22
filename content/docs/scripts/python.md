@@ -25,7 +25,7 @@ pip install --no-index --ignore-installed --find-links=./pkgs -r requirements.tx
 
 ```
 
-### mongo 数据迁移
+### MongoDB 数据迁移
 
 ```python
 from pymongo import MongoClient
@@ -193,4 +193,68 @@ class PythonService(win32serviceutil.ServiceFramework):
 
 if __name__ == '__main__':
     win32serviceutil.HandleCommandLine(PythonService)
+```
+
+### MySQL 数据迁移
+
+```python
+import pymysql
+
+def connect_to_database(host_name, user_name, user_password, db_name):
+    return pymysql.connect(
+        host=host_name,
+        user=user_name,
+        password=user_password,
+        database=db_name,
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+def migrate_data_with_transformations(source_db, target_db, source_table, target_table):
+    source_conn = connect_to_database('source_ip', 'source_username', 'source_password', source_db)
+    target_conn = connect_to_database('target_ip', 'target_username', 'target_password', target_db)
+
+    try:
+        with source_conn.cursor() as source_cursor:
+            # 获取源表的所有字段
+            source_cursor.execute(f"SHOW COLUMNS FROM {source_table}")
+            columns = [col['Field'] for col in source_cursor.fetchall()]
+
+            # 根据映射关系和目标表的字段顺序构造SELECT语句
+            select_fields = ', '.join(columns)
+            source_cursor.execute(f"SELECT {select_fields} FROM {source_table}")
+            rows = source_cursor.fetchall()
+            # print(select_fields)
+
+        with target_conn.cursor() as target_cursor:
+            for row in rows:
+                # 字段转换
+                row['cover_path'] = row['cover_path'][11:]
+                bucket_path = row.pop('bucket_path')
+                row['video_path'] = bucket_path and bucket_path[11:]
+
+                # 根据映射关系和目标表的字段顺序构造INSERT语句的字段和值
+                target_fields = ', '.join(row.keys())
+                target_values = ', '.join(['%s'] * len(row))
+                sql = f"INSERT INTO {target_table} ({target_fields}) VALUES ({target_values})"
+                print(row)
+                print(sql)
+                print(row.values())
+                target_cursor.execute(sql, tuple(row.values()))
+
+        target_conn.commit()
+        print("Data migration completed successfully")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        source_conn.close()
+        target_conn.close()
+
+# 替换以下变量为你的数据库凭证和表名
+source_db = 'source_db'
+target_db = 'target_db'
+source_table = 'source_table'
+target_table = 'target_table'
+
+migrate_data_with_transformations(source_db, target_db, source_table, target_table)
 ```

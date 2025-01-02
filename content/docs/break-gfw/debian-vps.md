@@ -107,19 +107,6 @@ sudo passwd root
 
 https://ping.pe/
 
-## Docker 配置国内源
-
-创建`/etc/docker/daemon.json`文件，写入如下内容，之后输入`sudo systemctl restart docker`重启 Docker 服务。
-
-```json
-{
-  "registry-mirrors": [
-    "https://docker.m.daocloud.io",
-    "https://docker.mirrors.ustc.edu.cn"
-  ]
-}
-```
-
 ## Debian 使用 Wifi 联网
 
 需要安装 NetworkManager，他提供了命令行方式 nmcli 和 图形界面方式 nmtui 进行网络连接和管理，避免用户通过修改相关文件进行 wifi 网络连接，方便使用。

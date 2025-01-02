@@ -79,7 +79,7 @@ qemu-img convert -p -f qcow2 -O raw /folder/image_name.qcow2 /folder/image_name.
 参数说明：
 
 - -p: presenting the conversion progress
-
 - -f: format of the source image
-
 - -O: format of the target image
+
+之后将转换好的 `.qcow2` 文件复制到 `/var/lib/libvirt/images/` 目录下，运行 virt-manager，选择 <u>导入现有磁盘映像</u> ，选择刚才的 `.qcow2` 文件。操作系统选择最新的 <u>Generic Linux</u> 即可。后续如有需要，可以在创建好的虚拟机的设置选项卡中设置硬件直通。

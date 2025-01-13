@@ -22,7 +22,6 @@ pip download -d ./pkgs -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.
 
 # 复制 pkgs 目录到离线的目标主机中, 执行以下命令离线安装第三方包
 pip install --no-index --ignore-installed --find-links=./pkgs -r requirements.txt
-
 ```
 
 ### MongoDB 数据迁移
@@ -257,4 +256,33 @@ source_table = 'source_table'
 target_table = 'target_table'
 
 migrate_data_with_transformations(source_db, target_db, source_table, target_table)
+```
+
+### Gitea 迁移
+
+```python
+import requests
+
+src_access_token = ''
+tar_headers = {
+    'Authorization': 'Bearer <tar_access_token>',
+    'Content-Type': 'application/json'
+}
+
+def migrate_git_repo(repo_name: str, repo_owner: str):
+    data = {
+        "auth_token": src_access_token,
+        "clone_addr": f"http://<gitea-src-ip>:3000/{repo_owner}/{repo_name}.git",
+        "repo_name": repo_name,
+        "repo_owner": repo_owner,
+    }
+
+    resp = requests.post('http://<gitea-tar-ip>:3000/api/v1/repos/migrate', json=data, headers=tar_headers)
+    print(resp.text)
+
+if __name__ == '__main__':
+    repo_names = []
+    for n in repo_names:
+        migrate_git_repo(n, 'repo_owner')
+
 ```

@@ -37,6 +37,10 @@ LANGUAGE="en_US:en"
 
 ## 配置 sudo
 
+{{<callout type="info">}}
+注意：也可以在 root 下输入 `usermod -aG sudo <username>` 命令直接将指定用户添加在 sudo 用户组中，而无需修改任何文件。
+{{</callout>}}
+
 ```shell
 apt install sudo
 chmod 777 /etc/sudoers # 将sudoers修改为可编辑权限

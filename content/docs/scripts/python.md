@@ -260,6 +260,21 @@ migrate_data_with_transformations(source_db, target_db, source_table, target_tab
 
 ### Gitea 迁移
 
+首先找到配置文件 app.ini, 在其最后添加以下语句以允许局域网内迁移
+
+```ini
+[migrations]
+ALLOW_LOCALNETWORKS = true
+```
+
+随后从源 web 页面上进入仓库列表，打开浏览器控制台，输入以下代码提取仓库名列表
+
+```js
+[...document.querySelectorAll("div.repo-title a.name")].map((i) => i.innerText);
+```
+
+之后将得到的仓库名列表复制到以下 python 脚本中的 repo_names 执行迁移, 注意设置正确的 repo_owner
+
 ```python
 import requests
 

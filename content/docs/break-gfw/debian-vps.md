@@ -28,12 +28,14 @@ LANG="zh_CN.UTF-8"
 LANGUAGE="zh_CN:zh"
 ```
 
-将其内容更改成如下内容，然后重启。
+将其内容更改成如下内容。
 
 ```
 LANG="en_US.UTF-8"
 LANGUAGE="en_US:en"
 ```
+
+此外，还要设置系统的区域。修改 `/etc/locale.gen` 文件，找到 `en_US.UTF-8 UTF-8` 并取消注释，同时注释掉其他，然后重启。
 
 ## 配置 sudo
 

@@ -64,9 +64,7 @@ spec:
 
 ## Kubernetes 安装基于 NFS 的 Storage Class
 
-首先，需要准备一台 NFS Server
-
-https://cn.linux-console.net/?p=30931
+首先，需要准备一台 NFS server，其配置过程请参考[这里](/docs/pve/storage/#nfs-server)。
 
 之后，需要在所有 worker 节点上安装 nfs-common, 否则 kubelet 报错：
 
@@ -76,7 +74,7 @@ MountVolume.SetUp failed for volume "nfs-subdir-external-provisioner-root" : mou
 nfs-subdir-external-provisioner-root: bad option; for several filesystems (e.g. nfs, cifs) you might need a /sbin/mount.<type> helper program.
 ```
 
-随后，输入一下命令安装 nfs-subdir-external-provisioner：
+随后，输入以下命令安装 nfs-subdir-external-provisioner：
 
 ```bash
 helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
@@ -95,10 +93,10 @@ helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs
 - nfs.path ：在 nfs server 中 /etc/exports 文件内设置的目录
 - torageClass.defaultClass ：用于设置此 Storage Class 为默认 Storage Class
 
-完成安装后将如下 `test-pvc-sc.yaml` 文件传入 kubectl 测试是否安装成功，如成功则可以在 nfs server 对应的目录中找到名为 SUCCESS 的文件。
+完成安装后将如下 "test-pvc-sc.yaml" 文件传入 kubectl 测试是否安装成功，如成功则可以在 NFS server 对应的目录中找到名为 SUCCESS 的文件。
 
 {{<callout type="info">}}
-注意，你需要将 storageClassName 设置为上一步中创建的 Storage Class，可通过 `kubectl get sc` 查看。
+注意，你需要将 storageClassName 设置为上一步中创建的 Storage Class，可通过 `kubectl get sc` 命令查看。
 {{</callout>}}
 
 ```yaml

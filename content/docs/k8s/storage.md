@@ -64,7 +64,7 @@ spec:
 
 ## Kubernetes 安装基于 NFS 的 Storage Class
 
-首先，需要准备一台 NFS server，其配置过程请参考[这里](/docs/pve/storage/#nfs-server)。
+首先，需要准备一台 NFS server，其配置过程请参考[这里](/docs/linux/storage/nfs/#nfs-server)。
 
 之后，需要在所有 worker 节点上安装 nfs-common, 否则 kubelet 报错：
 

@@ -301,3 +301,37 @@ if __name__ == '__main__':
         migrate_git_repo(n, 'repo_owner')
 
 ```
+
+### 移除 PDF 中的标注
+
+首先，执行以下命令安装 pymupdf 包
+
+```bash
+pip install pymupdf -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+```python
+import fitz  # 导入 PyMuPDF 库
+
+# 打开 PDF 文件
+doc = fitz.open("input.pdf")
+
+# 遍历每一页
+for page in doc:
+    # 获取页面上的所有注释
+    annots = page.annots()
+    # 遍历所有注释并删除
+    for annot in annots:
+      annot_type = annot.type[1]  # 类型名称
+      # 获取标注的内容
+      annot_content = annot.info["content"] if "content" in annot.info else "No content"
+      # 获取标注的矩形区域
+      annot_rect = annot.rect
+      # 打印标注信息
+      print(f"  Type: {annot_type}, Content: '{annot_content}', Position: {annot_rect}")
+      page.delete_annot(annot)
+
+# 保存修改后的 PDF 文件
+doc.save("output.pdf")
+doc.close()
+```

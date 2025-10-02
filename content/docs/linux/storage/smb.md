@@ -9,8 +9,6 @@ date: "2025-05-11"
 
 SMB（Server Message Block）是一种用于网络文件共享的协议，允许不同操作系统之间的计算机共享文件、打印机、串行端口等资源。Samba 是一个开源的软件套件，它实现了 SMB 协议，使得 Linux 和类 Unix 系统能够与 Windows 系统无缝集成。
 
-Samba 是一个开源的软件套件，实现了 SMB 协议，使得 Linux 和类 Unix 系统能够与 Windows 系统无缝集成。
-
 ## 安装与配置
 
 首先，执行以下命令安装 samba 服务器
@@ -20,10 +18,10 @@ sudo apt update
 sudo apt install samba
 ```
 
-之后执行 `sudo mkdir /srv/smb/shared` 创建一个目录用于共享，并执行以下命令设置合适的权限。
+之后执行 `sudo mkdir -p /srv/smb/shared` 创建一个目录用于共享，并执行以下命令设置合适的权限。
 
 ```sh
-sudo chmod -R 777 /srv/samba/shared
+sudo chmod -R 777 /srv/smb/shared
 sudo chown -R nobody:nogroup /srv/smb/shared
 ```
 
@@ -31,7 +29,7 @@ sudo chown -R nobody:nogroup /srv/smb/shared
 
 ```ini
 [shared]
-path = /srv/samba/shared
+path = /srv/smb/shared
 available = yes
 valid users = @smbuser
 read only = no

@@ -419,7 +419,23 @@ user@debian:~$ sudo lvdisplay /dev/mapper/centos-root
   Block device           253:0
 ```
 
-然后使用 xfs_groupfs 进行在线调整 xfs 格式的文件系统大小
+然后使用 `df -Th /` 命令查看根分区的文件系统类型为 xfs
+
+```bash
+user@debian:~$ sudo df -Th /
+Filesystem               Type  Size  Used Avail Use% Mounted on
+/dev/mapper/centos-root  xfs   237G  1.7G  236G   1% /
+```
+
+注意：如果文件系统为 ext4 格式，需要使用 resize2fs 命令进行调整，xfs 格式则需要使用 xfs_growfs 命令进行调整。
+
+使用 resize2fs 命令进行在线调整 ext4 格式的文件系统大小
+
+```bash
+sudo resize2fs /dev/mapper/centos-root
+```
+
+使用 xfs_groupfs 进行在线调整 xfs 格式的文件系统大小
 
 ```bash
 user@debian:~$ sudo xfs_growfs /dev/mapper/centos-root

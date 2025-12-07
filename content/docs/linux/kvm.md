@@ -83,3 +83,20 @@ qemu-img convert -p -f qcow2 -O raw /folder/image_name.qcow2 /folder/image_name.
 - -O: format of the target image
 
 之后将转换好的 `.qcow2` 文件复制到 `/var/lib/libvirt/images/` 目录下，运行 virt-manager，选择 <u>导入现有磁盘映像</u> ，选择刚才的 `.qcow2` 文件。操作系统选择最新的 <u>Generic Linux</u> 即可。后续如有需要，可以在创建好的虚拟机的设置选项卡中设置硬件直通。
+
+## 创建 KVM 虚拟机快照
+
+```bash
+virsh snapshot-create-as --domain <vm-name> \
+                         --name snap_$(date +%F_%T) \
+                         --description "before upgrade" \
+                         --atomic
+```
+
+参数说明：
+
+- --domain: 虚拟机名称
+- --name: 快照名称，这里使用当前时间作为快照名称
+- --description: 快照描述
+- --atomic: 原子操作，确保快照创建成功后，虚拟机状态保持一致
+- 如果想仅磁盘（关机后恢复快启），再加 --disk-only 即可省内存镜像，速度更快、占用更小。
